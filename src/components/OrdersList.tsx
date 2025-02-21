@@ -155,7 +155,7 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
                     {order.link.course.courseName}
                   </Descriptions.Item>
                   <Descriptions.Item label="Общая стоимость, KZT">
-                    {formatNumber(order.link.course.totalPrice)}
+                    {formatNumber(order.totalPrice)}
                   </Descriptions.Item>
                   <Descriptions.Item label="Количество месяцев">
                     {order.numberOfMonths}

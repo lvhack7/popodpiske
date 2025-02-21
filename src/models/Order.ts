@@ -2,7 +2,8 @@ import { Link } from "./Link";
 import { Payment } from "./Payment";
 
 export interface Order {
-    id: number;               // Primary key
+    id: number;               
+    totalPrice: number;
     numberOfMonths: number;
     monthlyPrice: number;
     nextBillingDate: string; // e.g. "2025-01-31"

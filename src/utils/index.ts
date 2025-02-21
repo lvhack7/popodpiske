@@ -1,4 +1,4 @@
-export const API_URL = "https://api.popodpiske.com"
+export const API_URL = 'https://api.popodpiske.com' //'http://localhost:5002' "https://api.popodpiske.com"
 
 export const formatDate = (date: Date, type: 'rus' | 'eng' = 'rus'): string => {
     const day = String(date.getDate()).padStart(2, '0');
