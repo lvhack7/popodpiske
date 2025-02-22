@@ -194,7 +194,6 @@ const PersonalInfoForm: React.FC = () => {
               <Form.Item name="phone" label="Номер телефона" className="mb-6">
                 <Input
                   size="large"
-                  placeholder="Введите номер телефона"
                   disabled
                   defaultValue={user?.phone}
                 />
