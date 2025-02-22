@@ -11,6 +11,7 @@ import { setCourse } from '../redux/slices/courseSlice';
 import useValidatePaymentLink from '../hooks/validateLink';
 import SmsCodeInput from '../components/SMSCodeInput';
 
+
 const { Title } = Typography;
 
 const Subscribe: React.FC = () => {
@@ -75,7 +76,7 @@ const Subscribe: React.FC = () => {
         if (linkId) {
           dispatch(setCourse({
             courseName: data?.course.courseName,
-            totalPrice: data?.course.totalPrice,
+            totalPrice: Number(data?.course.totalPrice),
             monthsArray: data?.monthsArray,
             paymentLink: linkId,
           }));

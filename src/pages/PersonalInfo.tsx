@@ -35,6 +35,11 @@ const PersonalInfoForm: React.FC = () => {
   const paymentLink = courseData.paymentLink;
   const sortedMonthsArray = [...courseData.monthsArray].sort((a, b) => a - b);
 
+  const marks = sortedMonthsArray.reduce((acc: { [key: number]: string }, month: number) => {
+    acc[month] = `${month}`;
+    return acc;
+  }, {});
+
   // Validate the payment link
   const { isValid, component } = useValidatePaymentLink(paymentLink);
 
@@ -72,11 +77,6 @@ const PersonalInfoForm: React.FC = () => {
     updatedDueDate.setMonth(updatedDueDate.getMonth() + numberOfMonths);
     setDueDate(updatedDueDate);
   }, [courseData?.totalPrice, numberOfMonths]);
-
-  const marks = sortedMonthsArray.reduce((acc: { [key: number]: string }, month: number) => {
-    acc[month] = `${month}`;
-    return acc;
-  }, {});
 
   // Helper to format phone numbers
   const formatPhone = (phone: string) => {
@@ -273,8 +273,8 @@ const PersonalInfoForm: React.FC = () => {
               <Form.Item label="Срок подписки (месяцы)">
                 <div className='mx-2'>
                   <Slider
-                    min={courseData.monthsArray[0]}
-                    max={courseData.monthsArray[courseData.monthsArray.length - 1]}
+                    min={sortedMonthsArray[0]}
+                    max={sortedMonthsArray[sortedMonthsArray.length - 1]}
                     step={null}
                     marks={marks}
                     value={numberOfMonths}
