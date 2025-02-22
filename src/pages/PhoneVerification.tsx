@@ -74,11 +74,10 @@ const PhoneVerificationForm: React.FC = () => {
       } else {
         navigate('/set-password')
       }
-
     } catch (e: any) {
-      showNotification('error', e.data?.message || 'Ошибка при проверке кода');
-      setClearError(true); // Clear the input
-      setTimeout(() => setClearError(false), 0); // Reset clearError state
+      showNotification('error', e.data?.message || 'Ошибка верификации SMS');
+      // setClearError(true); // Clear the input
+      // setTimeout(() => setClearError(false), 0); // Reset clearError state
     }
   };
 

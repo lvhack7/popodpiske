@@ -205,42 +205,43 @@ const PersonalInfoForm: React.FC = () => {
                 name="iin"
                 label="ИИН"
                 className="mb-6"
+                validateFirst
                 rules={[
                   { required: true, message: 'Пожалуйста, введите ИИН' },
-                  // {
-                  //   validator: (_, value) => {
-                  //     if (user?.iin) return Promise.resolve();
-                  //     if (!value) return Promise.resolve();
-                  //     if (value.length !== 12) {
-                  //       return Promise.reject(new Error('ИИН должен содержать 12 цифр'));
-                  //     }
+                  {
+                    validator: (_, value) => {
+                      if (user?.iin) return Promise.resolve();
+                      
+                      if (value.length !== 12) {
+                        return Promise.reject(new Error('ИИН должен содержать 12 цифр'));
+                      }
 
-                  //     const validateDOBString = (iin: string): boolean => {
-                  //       const dobStr = iin.slice(0, 6);
-                  //       const year = parseInt(dobStr.slice(0, 2), 10);
-                  //       const month = parseInt(dobStr.slice(2, 4), 10);
-                  //       const day = parseInt(dobStr.slice(4, 6), 10);
-                  //       if (month < 1 || month > 12 || day < 1 || day > 31) return false;
-                  //       const currentYear = new Date().getFullYear();
-                  //       const fullYear = year + (year > currentYear % 100 ? 1900 : 2000);
-                  //       const dob = new Date(fullYear, month - 1, day);
-                  //       if (
-                  //         dob.getFullYear() !== fullYear ||
-                  //         dob.getMonth() + 1 !== month ||
-                  //         dob.getDate() !== day ||
-                  //         fullYear > currentYear
-                  //       ) {
-                  //         return false;
-                  //       }
-                  //       return true;
-                  //     };
+                      const validateDOBString = (iin: string): boolean => {
+                        const dobStr = iin.slice(0, 6);
+                        const year = parseInt(dobStr.slice(0, 2), 10);
+                        const month = parseInt(dobStr.slice(2, 4), 10);
+                        const day = parseInt(dobStr.slice(4, 6), 10);
+                        if (month < 1 || month > 12 || day < 1 || day > 31) return false;
+                        const currentYear = new Date().getFullYear();
+                        const fullYear = year + (year > currentYear % 100 ? 1900 : 2000);
+                        const dob = new Date(fullYear, month - 1, day);
+                        if (
+                          dob.getFullYear() !== fullYear ||
+                          dob.getMonth() + 1 !== month ||
+                          dob.getDate() !== day ||
+                          fullYear > currentYear
+                        ) {
+                          return false;
+                        }
+                        return true;
+                      };
 
-                  //     if (!validateDOBString(value)) {
-                  //       return Promise.reject(new Error('Неверный ИИН'));
-                  //     }
-                  //     return Promise.resolve();
-                  //   },
-                  // },
+                      if (!validateDOBString(value)) {
+                        return Promise.reject(new Error('Неверный ИИН'));
+                      }
+                      return Promise.resolve();
+                    },
+                  },
                 ]}
               >
                 <Input

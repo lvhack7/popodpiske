@@ -62,6 +62,7 @@ const Subscribe: React.FC = () => {
     }
   }, [user, isLoggedIn, token, data, linkId, isValid, dispatch, navigate]);
 
+  
   const handlePhoneSubmit = async (values: { phone: string }) => {
     try {
       let phoneNumber = values.phone.replace(/[^0-9+]/g, '');
