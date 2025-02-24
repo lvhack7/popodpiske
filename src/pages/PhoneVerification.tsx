@@ -51,12 +51,12 @@ const PhoneVerificationForm: React.FC = () => {
 
   // Function to handle sending a new code
   const sendNewCode = async () => {
-    setCodeSent(true);
-    setTimer(60);
-
     try {
       await sendSMS({ phone: user.phone }).unwrap();
       showNotification('success', "Код отправлен на номер " + user.phone);
+
+      setCodeSent(true);
+      setTimer(60);
     } catch (e: any) {
       setClearError(true)
       showNotification('error', e.data?.message || 'Ошибка при отправке SMS');
