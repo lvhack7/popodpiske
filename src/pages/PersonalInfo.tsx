@@ -103,15 +103,15 @@ const PersonalInfoForm: React.FC = () => {
         );
 
         await sendCode({phone: formattedPhone})
-        if (isLoggedIn && token) {
-          navigate('/verify-phone');
-        } else {
+        
+        if (!isLoggedIn || !token) {
           dispatch(userCreated({
             ...values,
             phone: formattedPhone
-          }))
-          navigate('/verify-phone');
+          }));
         }
+
+        navigate('/verify-phone');
       } catch (e: any) {
         console.error(e);
         showNotification(

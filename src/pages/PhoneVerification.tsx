@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Button, Typography } from 'antd';
-// import { useSendSMSMutation, useVerifySMSMutation } from '../api/smsApi';
 import { showNotification } from '../hooks/showNotification';
 import { useNavigate } from 'react-router-dom';
 import SmsCodeInput from '../components/SMSCodeInput';
@@ -22,8 +21,8 @@ const PhoneVerificationForm: React.FC = () => {
 
   const linkId = useAppSelector(state => state.courseReducer.paymentLink)
 
-  const [codeSent, setCodeSent] = useState(false);
-  const [timer, setTimer] = useState(0); // Timer for resend button
+  const [codeSent, setCodeSent] = useState(true);
+  const [timer, setTimer] = useState(60); // Timer for resend button
   const [clearError, setClearError] = useState(false);
 
   const { isValid, component } = useValidatePaymentLink(linkId);
