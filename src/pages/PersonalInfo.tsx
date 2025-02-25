@@ -8,7 +8,7 @@ import { showNotification } from '../hooks/showNotification';
 import { setCourse } from '../redux/slices/courseSlice';
 import { formatDate, formatNumber } from '../utils';
 import useValidatePaymentLink from '../hooks/validateLink';
-import { useSendSMSMutation } from '../api/smsApi';
+
 
 const { Title, Text } = Typography;
 
@@ -45,7 +45,7 @@ const PersonalInfoForm: React.FC = () => {
 
   // Register mutation hook
   const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
-  const [sendCode] = useSendSMSMutation()
+  //const [sendCode] = useSendSMSMutation()
 
   // Local state for subscription details
   const [numberOfMonths, setNumberOfMonths] = useState<number>(sortedMonthsArray[0]);
@@ -102,8 +102,8 @@ const PersonalInfoForm: React.FC = () => {
           })
         );
 
-        await sendCode({phone: formattedPhone})
-        
+        //await sendCode({phone: formattedPhone})
+
         if (!isLoggedIn || !token) {
           dispatch(userCreated({
             ...values,

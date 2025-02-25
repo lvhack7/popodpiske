@@ -11,7 +11,6 @@ import { setCourse } from '../redux/slices/courseSlice';
 import useValidatePaymentLink from '../hooks/validateLink';
 import SmsCodeInput from '../components/SMSCodeInput';
 
-
 const { Title } = Typography;
 
 const Subscribe: React.FC = () => {
@@ -27,7 +26,8 @@ const Subscribe: React.FC = () => {
   const [sendSMS] = useSendSMSMutation();
   const [verifySMS] = useVerifySMSMutation();
 
-  // State for SMS resend logic
+  // State for SMS resend logic in the modal
+  // "codeSent" indicates whether the timer is running
   const [codeSent, setCodeSent] = useState(false);
   const [timer, setTimer] = useState(0);
   const [clearError, setClearError] = useState(false);
@@ -62,7 +62,6 @@ const Subscribe: React.FC = () => {
     }
   }, [user, isLoggedIn, token, data, linkId, isValid, dispatch, navigate]);
 
-  
   const handlePhoneSubmit = async (values: { phone: string }) => {
     try {
       let phoneNumber = values.phone.replace(/[^0-9+]/g, '');
@@ -116,14 +115,14 @@ const Subscribe: React.FC = () => {
     }
   };
 
-  // Timer logic for the resend button
+  // Timer logic for the resend button in the modal.
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (codeSent) {
       interval = setInterval(() => {
         setTimer((prev) => {
           if (prev === 1) {
-            setCodeSent(false); // Enable resend
+            setCodeSent(false); // Timer finished; enable resend.
             clearInterval(interval!);
             return 0;
           }
@@ -136,46 +135,71 @@ const Subscribe: React.FC = () => {
     };
   }, [codeSent]);
 
-  const sendNewCode = async () => {
-    setCodeSent(true);
-    setTimer(60);
-    try {
-        let phoneFormatted = phone.replace(/[^0-9+]/g, '');
-        if (phoneFormatted.length > 12) phoneFormatted = phoneFormatted.slice(0, 12);
+  // When the SMS modal becomes visible, check for an existing timestamp.
+  useEffect(() => {
+    if (smsModalVisible) {
+      const smsSentTimestamp = localStorage.getItem('forgotPasswordSmsTimestamp');
+      const now = Date.now();
+      if (smsSentTimestamp) {
+        const secondsPassed = Math.floor((now - parseInt(smsSentTimestamp, 10)) / 1000);
+        if (secondsPassed < 60) {
+          // If within cooldown, resume the timer with the remaining time.
+          setTimer(60 - secondsPassed);
+          setCodeSent(true);
+          return;
+        }
+      }
+      // Otherwise, send a new code automatically.
+      sendNewCode();
+    }
+  }, [smsModalVisible]);
 
-        await sendSMS({ phone: phoneFormatted }).unwrap();
-        //showNotification('success', "Код отправлен на номер " + user.phone);
+  // This function handles sending a new code.
+  const sendNewCode = async () => {
+    const smsSentTimestamp = localStorage.getItem('forgotPasswordSmsTimestamp');
+    const now = Date.now();
+    if (smsSentTimestamp) {
+      const secondsPassed = Math.floor((now - parseInt(smsSentTimestamp, 10)) / 1000);
+      if (secondsPassed < 60) {
+        setTimer(60 - secondsPassed);
+        setCodeSent(true);
+        return;
+      }
+    }
+    try {
+      let phoneFormatted = phone.replace(/[^0-9+]/g, '');
+      if (phoneFormatted.length > 12) phoneFormatted = phoneFormatted.slice(0, 12);
+      await sendSMS({ phone: phoneFormatted }).unwrap();
+      localStorage.setItem('forgotPasswordSmsTimestamp', String(now));
+      setCodeSent(true);
+      setTimer(60);
     } catch (e: any) {
-        setClearError(true);
-        showNotification('error', e.data?.message || 'Ошибка при отправке SMS');
+      setClearError(true);
+      showNotification('error', e.data?.message || 'Ошибка при отправке SMS');
     }
   };
 
   // ---------- SMS Modal handlers ----------
   const handleSmsFinish = async (values: any) => {
-    console.log('SMS code submitted:', values);
     try {
-        let phoneFormatted = phone.replace(/[^0-9+]/g, '');
-        if (phoneFormatted.length > 12) phoneFormatted = phoneFormatted.slice(0, 12);
-
-        const response = await verifySMS({ code: values.code, phone: phoneFormatted }).unwrap();
-        showNotification('success', 'Код подтвержден');
-        setSmsModalVisible(false);
-
-        const queryParams = new URLSearchParams();
-        queryParams.set('token', response.token);
-        queryParams.set('phone', response.phone);
-        queryParams.set('destination', linkId ? `/login?id=${linkId}` : '/login');
-
-        navigate(`/reset?${queryParams.toString()}`);
+      let phoneFormatted = phone.replace(/[^0-9+]/g, '');
+      if (phoneFormatted.length > 12) phoneFormatted = phoneFormatted.slice(0, 12);
+      const response = await verifySMS({ code: values.code, phone: phoneFormatted }).unwrap();
+      showNotification('success', 'Код подтвержден');
+      setSmsModalVisible(false);
+      const queryParams = new URLSearchParams();
+      queryParams.set('token', response.token);
+      queryParams.set('phone', response.phone);
+      queryParams.set('destination', linkId ? `/login?id=${linkId}` : '/login');
+      navigate(`/reset?${queryParams.toString()}`);
     } catch (e: any) {
-        showNotification('error', e.data?.message || 'Ошибка верификации SMS');
+      showNotification('error', e.data?.message || 'Ошибка верификации SMS');
     }
   };
 
   const handleSmsComplete = (code: string) => {
-    smsForm.setFieldsValue({code})
-    smsForm.submit()
+    smsForm.setFieldsValue({ code });
+    smsForm.submit();
   };
 
   return (
@@ -232,15 +256,18 @@ const Subscribe: React.FC = () => {
                 >
                   <Input.Password size="large" placeholder="Введите пароль" />
                 </Form.Item>
-                <Form.Item className='flex items-center justify-center mx-auto'>
-                  <Button type="link" onClick={async () => {
-                    try {
-                        await sendNewCode()
-                        setSmsModalVisible(true)
-                    } catch(e: any) {
-                        showNotification("error", e?.data?.message || "Произошла ошибка, попробуйте позже")
-                    }
-                  }}>
+                <Form.Item className="flex items-center justify-center mx-auto">
+                  <Button
+                    type="link"
+                    onClick={async () => {
+                      try {
+                        await sendNewCode();
+                        setSmsModalVisible(true);
+                      } catch (e: any) {
+                        showNotification("error", e?.data?.message || "Произошла ошибка, попробуйте позже");
+                      }
+                    }}
+                  >
                     Забыли пароль?
                   </Button>
                 </Form.Item>
@@ -267,7 +294,7 @@ const Subscribe: React.FC = () => {
           layout="vertical"
           onFinish={handleSmsFinish}
           initialValues={{ code: '' }}
-          className='mt-6'
+          className="mt-6"
         >
           <Form.Item
             name="code"
