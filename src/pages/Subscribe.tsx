@@ -26,8 +26,8 @@ const Subscribe: React.FC = () => {
   const [sendSMS] = useSendSMSMutation();
   const [verifySMS] = useVerifySMSMutation();
 
-  // State for SMS resend logic in the modal
-  // "codeSent" indicates whether the timer is running
+  // State for SMS resend logic in the modal.
+  // "codeSent" indicates whether the countdown is running.
   const [codeSent, setCodeSent] = useState(false);
   const [timer, setTimer] = useState(0);
   const [clearError, setClearError] = useState(false);
@@ -44,8 +44,23 @@ const Subscribe: React.FC = () => {
   // Use the validation hook only if linkId exists.
   const { isValid, data, component } = useValidatePaymentLink(linkId);
 
-  // If linkId is present, then dispatch course info and navigate to /personal-info.
-  // Otherwise, if no linkId, simply navigate to /dashboard after login.
+  // On mount, restore phone from localStorage if available.
+  useEffect(() => {
+    const storedPhone = localStorage.getItem("userPhone");
+    if (storedPhone) {
+      setPhone(storedPhone);
+    }
+  }, []);
+
+  // Restore modal open state if it was open before a page reload.
+  useEffect(() => {
+    const modalVisible = localStorage.getItem("smsModalVisible");
+    if (modalVisible === "true") {
+      setSmsModalVisible(true);
+    }
+  }, []);
+
+  // If linkId is present, dispatch course info and navigate accordingly.
   useEffect(() => {
     if (!linkId) {
       if (user && isLoggedIn && token) {
@@ -58,6 +73,10 @@ const Subscribe: React.FC = () => {
         monthsArray: data?.monthsArray,
         paymentLink: linkId,
       }));
+      // Clear temporary data before redirecting
+      localStorage.removeItem("userPhone");
+      localStorage.removeItem("smsSentTimestamp");
+      localStorage.removeItem("smsModalVisible");
       navigate("/personal-info");
     }
   }, [user, isLoggedIn, token, data, linkId, isValid, dispatch, navigate]);
@@ -68,8 +87,10 @@ const Subscribe: React.FC = () => {
       if (phoneNumber.length > 12) phoneNumber = phoneNumber.slice(0, 12);
 
       const response = await checkPhone({ phone: phoneNumber }).unwrap();
+      // Store the phone number in localStorage so it persists after reload.
+      localStorage.setItem("userPhone", phoneNumber);
+      setPhone(phoneNumber);
       if (response.exists) {
-        setPhone(values.phone);
         setStep('password');
       } else {
         dispatch(updateUserField({ key: 'phone', value: phoneNumber }));
@@ -80,8 +101,16 @@ const Subscribe: React.FC = () => {
             monthsArray: data?.monthsArray,
             paymentLink: linkId,
           }));
+          // Clear temporary data before redirecting
+          localStorage.removeItem("userPhone");
+          localStorage.removeItem("smsSentTimestamp");
+          localStorage.removeItem("smsModalVisible");
           navigate('/personal-info');
         } else {
+          // Clear temporary data before redirecting
+          localStorage.removeItem("userPhone");
+          localStorage.removeItem("smsSentTimestamp");
+          localStorage.removeItem("smsModalVisible");
           navigate('/dashboard');
         }
       }
@@ -106,8 +135,16 @@ const Subscribe: React.FC = () => {
           monthsArray: data?.monthsArray,
           paymentLink: linkId,
         }));
+        // Clear temporary data before redirecting
+        localStorage.removeItem("userPhone");
+        localStorage.removeItem("smsSentTimestamp");
+        localStorage.removeItem("smsModalVisible");
         navigate('/personal-info');
       } else {
+        // Clear temporary data before redirecting
+        localStorage.removeItem("userPhone");
+        localStorage.removeItem("smsSentTimestamp");
+        localStorage.removeItem("smsModalVisible");
         navigate('/dashboard');
       }
     } catch (e: any) {
@@ -138,12 +175,12 @@ const Subscribe: React.FC = () => {
   // When the SMS modal becomes visible, check for an existing timestamp.
   useEffect(() => {
     if (smsModalVisible) {
-      const smsSentTimestamp = localStorage.getItem('forgotPasswordSmsTimestamp');
+      const smsSentTimestamp = localStorage.getItem('smsSentTimestamp');
       const now = Date.now();
       if (smsSentTimestamp) {
         const secondsPassed = Math.floor((now - parseInt(smsSentTimestamp, 10)) / 1000);
         if (secondsPassed < 60) {
-          // If within cooldown, resume the timer with the remaining time.
+          // Resume the timer with the remaining time.
           setTimer(60 - secondsPassed);
           setCodeSent(true);
           return;
@@ -154,9 +191,9 @@ const Subscribe: React.FC = () => {
     }
   }, [smsModalVisible]);
 
-  // This function handles sending a new code.
+  // Function to handle sending a new code.
   const sendNewCode = async () => {
-    const smsSentTimestamp = localStorage.getItem('forgotPasswordSmsTimestamp');
+    const smsSentTimestamp = localStorage.getItem('smsSentTimestamp');
     const now = Date.now();
     if (smsSentTimestamp) {
       const secondsPassed = Math.floor((now - parseInt(smsSentTimestamp, 10)) / 1000);
@@ -167,10 +204,14 @@ const Subscribe: React.FC = () => {
       }
     }
     try {
-      let phoneFormatted = phone.replace(/[^0-9+]/g, '');
+      let phoneFormatted = phone;
+      if (!phoneFormatted) {
+        // Retrieve phone from localStorage if it's not in state.
+        phoneFormatted = localStorage.getItem("userPhone") || "";
+      }
       if (phoneFormatted.length > 12) phoneFormatted = phoneFormatted.slice(0, 12);
       await sendSMS({ phone: phoneFormatted }).unwrap();
-      localStorage.setItem('forgotPasswordSmsTimestamp', String(now));
+      localStorage.setItem('smsSentTimestamp', String(now));
       setCodeSent(true);
       setTimer(60);
     } catch (e: any) {
@@ -182,11 +223,18 @@ const Subscribe: React.FC = () => {
   // ---------- SMS Modal handlers ----------
   const handleSmsFinish = async (values: any) => {
     try {
-      let phoneFormatted = phone.replace(/[^0-9+]/g, '');
+      let phoneFormatted = phone;
+      if (!phoneFormatted) {
+        phoneFormatted = localStorage.getItem("userPhone") || "";
+      }
       if (phoneFormatted.length > 12) phoneFormatted = phoneFormatted.slice(0, 12);
       const response = await verifySMS({ code: values.code, phone: phoneFormatted }).unwrap();
       showNotification('success', 'Код подтвержден');
       setSmsModalVisible(false);
+      // Clear all temporary data after successful SMS verification.
+      localStorage.removeItem("smsModalVisible");
+      localStorage.removeItem("smsSentTimestamp");
+      localStorage.removeItem("userPhone");
       const queryParams = new URLSearchParams();
       queryParams.set('token', response.token);
       queryParams.set('phone', response.phone);
@@ -263,6 +311,7 @@ const Subscribe: React.FC = () => {
                       try {
                         await sendNewCode();
                         setSmsModalVisible(true);
+                        localStorage.setItem("smsModalVisible", "true");
                       } catch (e: any) {
                         showNotification("error", e?.data?.message || "Произошла ошибка, попробуйте позже");
                       }
@@ -286,7 +335,10 @@ const Subscribe: React.FC = () => {
       <Modal
         title="Подтверждение телефона"
         visible={smsModalVisible}
-        onCancel={() => setSmsModalVisible(false)}
+        onCancel={() => {
+          setSmsModalVisible(false);
+          localStorage.removeItem("smsModalVisible");
+        }}
         footer={null}
       >
         <Form
@@ -310,7 +362,7 @@ const Subscribe: React.FC = () => {
 
           <Form.Item>
             <p className="w-full text-center text-gray-600">
-              Код отправлен на номер {phone}
+              Код будет отправлен на номер {phone}
             </p>
           </Form.Item>
 
