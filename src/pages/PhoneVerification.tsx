@@ -45,14 +45,15 @@ const PhoneVerificationForm: React.FC = () => {
 
       // Otherwise, send the code.
       try {
+        setTimerActive(true);
         await sendSMS({ phone: user.phone }).unwrap();
         //showNotification('success', "Код отправлен на номер " + user.phone);
         localStorage.setItem('smsSentTimestamp', String(now));
-        setTimerActive(true);
         setTimer(60);
       } catch (e: any) {
         setClearError(true);
-        showNotification('error', e.data?.message || 'Ошибка при отправке SMS');
+        setTimerActive(false);
+        showNotification('error', e.data?.message || 'Ошибка при отправке SMS, попробуйте получить новый код позже');
       }
     };
 
