@@ -1,50 +1,79 @@
-# React + TypeScript + Vite
+# Popodpiske Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Краткое описание проекта:**  
+Данный проект представляет собой frontend-приложение, созданное с использованием React, TypeScript, Vite, Redux Toolkit + RTK Query, Antd. Проект использует современные технологии для быстрой разработки и сборки, а также обеспечивает высокую производительность и удобство разработки.
 
-Currently, two official plugins are available:
+## Описание
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+В этом проекте используется React с TypeScript, а Vite отвечает за быструю сборку и запуск в режиме разработки а также Redux Toolkit + RTK Query для state management и API подключение. Проект использует UI библиотеку Antd для компонентов как форма, таблицы, уведомления и тд.
 
-## Expanding the ESLint configuration
+## ВАЖНО
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Перед запуском проекта обязательно перейдите в файл `src/utils/index.ts` и измените значение переменной `API_URL` на URL вашего backend-сервера в режиме разработки.
 
-- Configure the top-level `parserOptions` property like this:
+## Предпосылки
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+Перед запуском убедитесь, что у вас установлены:
+- [Node.js](https://nodejs.org/) (версия 20 или выше)
+- [npm](https://www.npmjs.com/) или [Yarn](https://yarnpkg.com/)
+
+## Установка
+
+1. **Клонируйте репозиторий:**
+
+   ```bash
+   git clone https://github.com/relitalkschool/popodpiske.git
+   ```
+
+2. **Перейдите в директорию проекта:**
+
+   ```bash
+   cd popodpiske
+   ```
+
+3. **Установите зависимости:**
+
+   ```bash
+   npm install
+   ```
+
+## Запуск проекта
+
+### Режим разработки
+
+Запустите приложение в режиме разработки:
+
+```bash
+npm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Приложение будет доступно по адресу: [http://localhost:5173](http://localhost:5173)  
+(или по другому порту, указанному в настройках Vite)
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### Продакшен сборка
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. Соберите проект:
+
+   ```bash
+   npm run build
+   ```
+
+2. Запустите собранное приложение (например, с помощью команды предварительного просмотра):
+
+   ```bash
+   npm run preview
+   ```
+
+## Структура проекта
+
+- **src/**: Исходный код приложения
+- **public/**: Публичные файлы (например, index.html)
+- **src/api**: API запросы
+- **src/components**: Компоненты для страница
+- **src/hooks**: React хуки
+- **src/models**: Модельки с API
+- **src/pages**: Страницы
+- **src/redux**: Redux Toolkit зависимости
+- **src/utils/index.ts**: Файл конфигурации, в котором необходимо указать URL backend API (см. раздел "ВАЖНО")
+- **vite.config.ts**: Конфигурация Vite
+- **package.json**: Зависимости и скрипты проекта
