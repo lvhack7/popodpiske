@@ -21,7 +21,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
 
   // Full view: one step per month
   if (numberOfMonths <= fullViewThreshold) {
-    let billingDate = dueDate; // start with the due date
+    let billingDate = new Date().toISOString().split('T')[0]; // start with the due date
     const stepsData = Array.from({ length: numberOfMonths }, (_, i) => {
       // Format current billing date
       const formattedBillingDate = formatBillingDate(billingDate);
@@ -50,7 +50,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
 
   // Condensed view: show only the first month, ellipsis, and the last month
   else {
-    const firstBillingDateFormatted = formatBillingDate(dueDate);
+    const firstBillingDateFormatted = formatBillingDate(new Date().toString().);
     let lastBillingDate = dueDate;
     // Compute the billing date for the last month by iterating
     for (let i = 1; i < numberOfMonths; i++) {
