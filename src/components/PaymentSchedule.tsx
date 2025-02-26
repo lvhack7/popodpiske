@@ -1,12 +1,11 @@
 import { FC } from 'react';
 import { Steps } from 'antd';
 import { formatBillingDate, formatNumber } from '../utils';
-import { getNextBillingDate } from '../utils'; // or wherever it's defined
-
+import { getNextBillingDate } from '../utils';
 
 interface PaymentScheduleProps {
-  dueDate: string;          // Starting date (e.g. "2025-01-28")
-  numberOfMonths: number;   // Any positive number
+  dueDate: string;          // Last billing date (already in DD.MM.YYYY format)
+  numberOfMonths: number;   // Total billing cycles
   monthlyPayment: number;   // e.g. 400
   currentMonthIndex: number; // 0-based index for the "active" month
 }
@@ -17,28 +16,30 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
   monthlyPayment,
   currentMonthIndex,
 }) => {
-  const fullViewThreshold = 6; // Show full view if months <= 6
+  // Today's billing date is taken from new Date() and converted to ISO (yyyy-mm-dd)
+  const todayIso = new Date().toISOString().split('T')[0];
+  // Format today's date to DD.MM.YYYY using your utility function.
+  const todayBillingFormatted = formatBillingDate(todayIso);
 
-  // Full view: one step per month
-  if (numberOfMonths <= fullViewThreshold) {
-    let billingDate = new Date().toISOString().split('T')[0]; // start with the due date
+  // If there are 3 or fewer months, show a full view (one step per month)
+  if (numberOfMonths <= 3) {
+    let billingDate = todayIso;
     const stepsData = Array.from({ length: numberOfMonths }, (_, i) => {
-      // Format current billing date
-      const formattedBillingDate = formatBillingDate(billingDate);
-      // Create the step
+      const formattedDate = formatBillingDate(billingDate);
       const step = {
         title: `Месяц ${i + 1}`,
         description: (
           <>
             <div>Сумма: {formatNumber(monthlyPayment)}₸</div>
-            <div>Дата: {formattedBillingDate}</div>
+            <div>Дата: {formattedDate}</div>
           </>
         ),
       };
-      // Get the next billing date for the following month
+      // Compute the next billing date for the next step
       billingDate = getNextBillingDate(billingDate, 1);
       return step;
     });
+
     return (
       <Steps
         direction="vertical"
@@ -47,18 +48,12 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
       />
     );
   }
-
-  // Condensed view: show only the first month, ellipsis, and the last month
+  // Condensed view: show only two steps if numberOfMonths > 3:
+  // - The first step shows today's billing date.
+  // - The last step shows the dueDate (the final billing date, already in DD.MM.YYYY format).
+  // - The ellipsis indicates intermediate months.
   else {
-    const firstBillingDateFormatted = formatBillingDate(new Date().toString().);
-    let lastBillingDate = dueDate;
-    // Compute the billing date for the last month by iterating
-    for (let i = 1; i < numberOfMonths; i++) {
-      lastBillingDate = getNextBillingDate(lastBillingDate, 1);
-    }
-    const lastBillingDateFormatted = formatBillingDate(lastBillingDate);
-
-    // Map the actual currentMonthIndex into the condensed view:
+    // Map the currentMonthIndex to one of the three steps:
     let condensedCurrent: number;
     if (currentMonthIndex <= 0) {
       condensedCurrent = 0;
@@ -74,7 +69,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
         description: (
           <>
             <div>Сумма: {formatNumber(monthlyPayment)}₸</div>
-            <div>Дата: {firstBillingDateFormatted}</div>
+            <div>Дата: {todayBillingFormatted}</div>
           </>
         ),
       },
@@ -87,7 +82,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
         description: (
           <>
             <div>Сумма: {formatNumber(monthlyPayment)}₸</div>
-            <div>Дата: {lastBillingDateFormatted}</div>
+            <div>Дата: {dueDate}</div>
           </>
         ),
       },
