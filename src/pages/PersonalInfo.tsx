@@ -74,7 +74,7 @@ const PersonalInfoForm: React.FC = () => {
     }
     setMonthlyPayment(courseData.totalPrice / numberOfMonths);
 
-    const uptNextDate = getNextBillingDate(new Date().toISOString());
+    const uptNextDate = new Date().toISOString().split('T')[0];
     const updatedDueDate = getNextBillingDate(uptNextDate, numberOfMonths - 2);
 
     setDueDate(formatBillingDate(updatedDueDate));
@@ -295,7 +295,7 @@ const PersonalInfoForm: React.FC = () => {
                 </Text>
               </Form.Item>
 
-              <Form.Item label="Следующее списание">
+              <Form.Item label="Следующее списание (сегодня)">
                 <Text strong className="text-blue-600 text-lg">
                   {nextDate}
                 </Text>
