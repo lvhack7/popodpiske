@@ -1,7 +1,8 @@
 import { FC } from 'react';
 import { Steps } from 'antd';
-import dayjs from 'dayjs';
-import { formatNumber } from '../utils';
+import { formatBillingDate, formatNumber } from '../utils';
+import { getNextBillingDate } from '../utils'; // or wherever it's defined
+
 
 interface PaymentScheduleProps {
   dueDate: string;          // Starting date (e.g. "2025-01-28")
@@ -16,45 +17,48 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
   monthlyPayment,
   currentMonthIndex,
 }) => {
-  const startDate = dayjs(dueDate);
-  const fullViewThreshold = 6; // If numberOfMonths <= 6, show full view; otherwise, show condensed
+  const fullViewThreshold = 6; // Show full view if months <= 6
 
   // Full view: one step per month
   if (numberOfMonths <= fullViewThreshold) {
+    let billingDate = dueDate; // start with the due date
     const stepsData = Array.from({ length: numberOfMonths }, (_, i) => {
-      const monthNumber = i + 1;
-      const dateForMonth = startDate.add(i, 'month').format('DD.MM.YYYY');
-      return {
-        title: `Месяц ${monthNumber}`,
+      // Format current billing date
+      const formattedBillingDate = formatBillingDate(billingDate);
+      // Create the step
+      const step = {
+        title: `Месяц ${i + 1}`,
         description: (
           <>
             <div>Сумма: {formatNumber(monthlyPayment)}₸</div>
-            <div>Дата: {dateForMonth}</div>
+            <div>Дата: {formattedBillingDate}</div>
           </>
         ),
       };
+      // Get the next billing date for the following month
+      billingDate = getNextBillingDate(billingDate, 1);
+      return step;
     });
     return (
       <Steps
         direction="vertical"
         current={currentMonthIndex}
-        items={stepsData.map((step) => ({
-          title: step.title,
-          description: step.description,
-        }))}
+        items={stepsData}
       />
     );
   }
 
   // Condensed view: show only the first month, ellipsis, and the last month
   else {
-    const dateMonth1 = startDate.format('DD.MM.YYYY');
-    const dateMonthN = startDate
-      .add(numberOfMonths - 1, 'month')
-      .format('DD.MM.YYYY');
+    const firstBillingDateFormatted = formatBillingDate(dueDate);
+    let lastBillingDate = dueDate;
+    // Compute the billing date for the last month by iterating
+    for (let i = 1; i < numberOfMonths; i++) {
+      lastBillingDate = getNextBillingDate(lastBillingDate, 1);
+    }
+    const lastBillingDateFormatted = formatBillingDate(lastBillingDate);
 
     // Map the actual currentMonthIndex into the condensed view:
-    //   0 => first step, numberOfMonths-1 => last step, anything else => ellipsis
     let condensedCurrent: number;
     if (currentMonthIndex <= 0) {
       condensedCurrent = 0;
@@ -70,7 +74,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
         description: (
           <>
             <div>Сумма: {formatNumber(monthlyPayment)}₸</div>
-            <div>Дата: {dateMonth1}</div>
+            <div>Дата: {firstBillingDateFormatted}</div>
           </>
         ),
       },
@@ -83,7 +87,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
         description: (
           <>
             <div>Сумма: {formatNumber(monthlyPayment)}₸</div>
-            <div>Дата: {dateMonthN}</div>
+            <div>Дата: {lastBillingDateFormatted}</div>
           </>
         ),
       },
@@ -93,10 +97,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
       <Steps
         direction="vertical"
         current={condensedCurrent}
-        items={stepsData.map((step) => ({
-          title: step.title,
-          description: step.description,
-        }))}
+        items={stepsData}
       />
     );
   }

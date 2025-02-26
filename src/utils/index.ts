@@ -7,6 +7,14 @@ export const formatDate = (date: Date, type: 'rus' | 'eng' = 'rus'): string => {
     return type === 'rus' ? `${day}.${month}.${year}` : `${year}-${month}-${day}`;
 };
 
+export const formatBillingDate = (dateStr: string) => {
+  const parts = dateStr.split('-'); // ["yyyy", "mm", "dd"]
+  if (parts.length !== 3) {
+    throw new Error('Invalid date format');
+  }
+  return `${parts[2]}.${parts[1]}.${parts[0]}`;
+}
+
 export const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('ru-RU', {
       minimumFractionDigits: 2,
@@ -14,12 +22,15 @@ export const formatNumber = (value: number): string => {
     }).format(value);
 };
 
-export function getNextBillingDate(currentNextBillingDate: string): string {
+export function getNextBillingDate(currentNextBillingDate: string, month: number = 1): string {
+  let addMonth = month
+  if (addMonth == 0) addMonth = 1
+
   const currentNextBilling = currentNextBillingDate ? new Date(currentNextBillingDate) : new Date();
   const currentDay = currentNextBilling.getDate();
 
   const newDate = new Date(currentNextBilling);
-  newDate.setMonth(newDate.getMonth() + 1);
+  newDate.setMonth(newDate.getMonth() + addMonth);
 
   // Check if the day exists in the new month
   if (newDate.getDate() !== currentDay) {

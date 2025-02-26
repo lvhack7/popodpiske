@@ -6,7 +6,7 @@ import { userCreated } from '../redux/slices/userSlice';
 import { useRegisterMutation } from '../api/authApi';
 import { showNotification } from '../hooks/showNotification';
 import { setCourse } from '../redux/slices/courseSlice';
-import { formatDate, formatNumber } from '../utils';
+import { formatBillingDate, formatNumber, getNextBillingDate } from '../utils';
 import useValidatePaymentLink from '../hooks/validateLink';
 
 
@@ -50,7 +50,8 @@ const PersonalInfoForm: React.FC = () => {
   // Local state for subscription details
   const [numberOfMonths, setNumberOfMonths] = useState<number>(sortedMonthsArray[0]);
   const [monthlyPayment, setMonthlyPayment] = useState<number>(0);
-  const [dueDate, setDueDate] = useState<Date>(new Date());
+  const [dueDate, setDueDate] = useState<string>();
+  const [nextDate, setNextDate] = useState<string>()
 
   // When the user exists, pre-fill the form
   useEffect(() => {
@@ -73,9 +74,12 @@ const PersonalInfoForm: React.FC = () => {
     }
     setMonthlyPayment(courseData.totalPrice / numberOfMonths);
 
-    const updatedDueDate = new Date();
-    updatedDueDate.setMonth(updatedDueDate.getMonth() + numberOfMonths);
-    setDueDate(updatedDueDate);
+    const updatedDueDate = getNextBillingDate(new Date().toISOString());
+    const uptNextDate = getNextBillingDate(updatedDueDate, numberOfMonths - 2);
+
+    setDueDate(formatBillingDate(updatedDueDate));
+    setNextDate(formatBillingDate(uptNextDate))
+    
   }, [courseData?.totalPrice, numberOfMonths]);
 
   // Helper to format phone numbers
@@ -98,7 +102,7 @@ const PersonalInfoForm: React.FC = () => {
           setCourse({
             numberOfMonths,
             monthlyPayment,
-            dueDate: formatDate(dueDate, 'eng'),
+            dueDate,
           })
         );
 
@@ -285,16 +289,21 @@ const PersonalInfoForm: React.FC = () => {
               </Form.Item>
 
               {/* Ежемесячный платеж */}
-              <Form.Item label="Ежемесячный платеж">
+              <Form.Item label="Ежемесячный платеж (Без % и переплат)">
                 <Text strong className="text-xl">
                   {formatNumber(monthlyPayment)} KZT
                 </Text>
               </Form.Item>
 
-              {/* Срок оплаты */}
-              <Form.Item label="Срок оплаты">
+              <Form.Item label="Следующее списание">
                 <Text strong className="text-blue-600 text-lg">
-                  {formatDate(dueDate)}
+                  {nextDate}
+                </Text>
+              </Form.Item>
+
+              <Form.Item label="Последний платеж">
+                <Text strong className="text-blue-600 text-lg">
+                  {dueDate}
                 </Text>
               </Form.Item>
 
