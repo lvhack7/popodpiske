@@ -197,7 +197,7 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
                 <div className='flex justify-end mt-3 space-x-2'>
                   {order?.payments?.length === 0 && (
                     <Button variant='outlined' color='primary' size='large' type='primary' loading={isAddPaymentLoading} onClick={() => handleAddPayment(order.paymentId)}>
-                      Добавить метод оплату
+                      Добавить метод оплаты
                     </Button>
                   )}
                   {(order.status !== "cancelled" && order.status !== "completed") && (
