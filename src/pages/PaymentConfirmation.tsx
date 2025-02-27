@@ -6,18 +6,19 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 
 import PaymentSchedule from '../components/PaymentSchedule'; // The wrapper component
-import { useAppSelector } from '../hooks/redux';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { formatNumber } from '../utils';
 import { useCreateOrderMutation } from '../api/orderApi';
 import { showNotification } from '../hooks/showNotification';
 import useValidatePaymentLink from '../hooks/validateLink';
+import { clearCourse } from '../redux/slices/courseSlice';
 
 const { Title, Text } = Typography;
 
 const PaymentConfirmation: React.FC = () => {
   // 1. Get the data from Redux
-  const [loading, setLoading] = useState<boolean>(false)
-  const [createOrder] = useCreateOrderMutation()
+  const dispatch = useAppDispatch();
+  const [createOrder, {isLoading}] = useCreateOrderMutation()
   const {
     courseName,
     totalPrice,
@@ -32,18 +33,16 @@ const PaymentConfirmation: React.FC = () => {
 
   const handlePayCurrentMonth = async () => {
     try {
-      setLoading(true)
       const response = await createOrder({
         numberOfMonths,
         monthlyPrice: monthlyPayment,
         linkUUID: paymentLink
       }).unwrap()
+      dispatch(clearCourse());
 
       window.location.href = response.paymentUrl
     } catch(e: any) {
       showNotification('error', e.data?.message || 'Ошибка при создании заказа')
-    } finally {
-      setLoading(false)
     }
   };
 
@@ -83,7 +82,7 @@ const PaymentConfirmation: React.FC = () => {
             <Button
               type="primary"
               size='large'
-              loading={loading}
+              loading={isLoading}
               onClick={handlePayCurrentMonth}
               disabled={currentMonthIndex >= numberOfMonths}
             >

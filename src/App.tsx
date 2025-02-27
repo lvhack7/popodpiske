@@ -41,8 +41,8 @@ const App = () => {
             <Route path="/set-password" element={<PasswordCreationForm />} />
             <Route path="/payment" element={<PaymentConfirmation />} />
           </Route>
-          <Route path="/success" element={<PaymentSuccessPage />} />
-          <Route path="/failure" element={<PaymentFailurePage />} />
+          <Route path="/success/:orderId" element={<PaymentSuccessPage />} />
+          <Route path="/failure/:orderId" element={<PaymentFailurePage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/credentials" element={<CompanyDetails />} />
           <Route path="*" element={<Navigate to="/" replace />} />

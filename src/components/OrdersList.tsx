@@ -5,10 +5,12 @@ import { Order } from '../models/Order';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { Payment } from '../models/Payment';
 import { formatNumber, getNextBillingDate } from '../utils';
-import { useCancelOrderMutation } from '../api/orderApi';
+import { useAddPaymentMutation, useCancelOrderMutation } from '../api/orderApi';
+import { showNotification } from '../hooks/showNotification';
 
 const { Panel } = Collapse;
 const { Title } = Typography;
+
 
 const statusMapping: { [key: string]: { text: string; color: string } } = {
   success: { text: 'Успешно', color: 'green' },
@@ -18,10 +20,21 @@ const statusMapping: { [key: string]: { text: string; color: string } } = {
 };
 
 const orderStatusMapping: { [key: string]: { text: string; color: string; bgColor: string } } = {
+  pending: { text: 'В ожидании оплаты', color: 'gray',  bgColor: 'bg-gray-100' },
   active: { text: 'Активный', color: 'green', bgColor: 'bg-green-100' },
   past_due: { text: 'Просроченный', color: 'orange', bgColor: 'bg-orange-200' },
   completed: { text: 'Завершенный', color: 'blue', bgColor: 'bg-blue-200' },
   cancelled: { text: 'Отмененный', color: 'red', bgColor: 'bg-red-200' },
+};
+
+const formatDate = (date?: string | Date): string => {
+  if (!date) return '—';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('ru-RU', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
 };
 
 interface OrdersListProps {
@@ -32,6 +45,7 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [selectedCourseName, setSelectedCourseName] = useState<string>('');
+  const [addPayment, { isLoading: isAddPaymentLoading }] = useAddPaymentMutation();
   const [cancelOrder, { isLoading: isCancelLoading }] = useCancelOrderMutation();
 
   const showCancelModal = (orderId: number, courseName: string) => {
@@ -51,18 +65,20 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
     setIsModalVisible(false);
   };
 
-  const formatDate = (date?: string | Date): string => {
-    if (!date) return '—';
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toLocaleDateString('ru-RU', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+  const handleAddPayment = async (orderId: string) => {
+    try {
+      const data = await addPayment(orderId).unwrap();
+      window.location.href = data.paymentUrl;
+    } catch (error: any) {
+      showNotification('error', error.data?.message || 'Ошибка при добавлении платежа');
+    }
   };
 
   const buildPaymentsArray = (order: Order): Payment[] => {
-    const { payments, numberOfMonths, monthlyPrice } = order;
+    const { payments, numberOfMonths, monthlyPrice, status } = order;
+
+    if (order.nextBillingDate === null && status === "pending") return [];
+
     const sorted = [...payments].sort(
       (a, b) => new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime()
     );
@@ -178,15 +194,18 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
                   pagination={false}
                   rowKey={(rec, idx) => rec.id ? String(rec.id) : `pending-${idx}`}
                 />
-                {
-                    (order.status !== "cancelled" && order.status !== "completed") && (
-                        <div className='flex justify-end mt-3'>
-                            <Button variant='outlined' color='danger' size='large' type='primary' onClick={() => showCancelModal(order.id, order.link.course.courseName)}>
-                                Отменить подписку
-                            </Button>
-                        </div>
-                    )
-                }
+                <div className='flex justify-end mt-3 space-x-2'>
+                  {order?.payments?.length === 0 && (
+                    <Button variant='outlined' color='primary' size='large' type='primary' loading={isAddPaymentLoading} onClick={() => handleAddPayment(order.paymentId)}>
+                      Добавить метод оплату
+                    </Button>
+                  )}
+                  {(order.status !== "cancelled" && order.status !== "completed") && (
+                    <Button variant='outlined' color='danger' size='large' type='primary' onClick={() => showCancelModal(order.id, order.link.course.courseName)}>
+                      Отменить подписку
+                    </Button>
+                  )}
+                </div>
               </Panel>
             );
           })}

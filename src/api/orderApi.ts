@@ -16,11 +16,11 @@ const orderApi = baseApi.injectEndpoints({
             query: () => 'orders',
             providesTags: ['Orders']
         }),
-        successOrder: builder.mutation<any, {linkId: string}>({
-            query: (body) => ({
-                url: `orders/success`,
+        addPayment: builder.mutation<any, string>({
+            query: (orderId) => ({
+                url: 'orders/add-payment',
                 method: 'POST',
-                body: body,
+                body: { orderId },
             }),
         }),
         validatePaymentLink: builder.query<Link, string>({
@@ -46,10 +46,10 @@ const orderApi = baseApi.injectEndpoints({
 export const {
     useCreateOrderMutation,
     useGetOrdersQuery,
-    useSuccessOrderMutation,
     useValidatePaymentLinkQuery,
     useMarkPaymentLinkAsUsedMutation,
-    useCancelOrderMutation
+    useCancelOrderMutation,
+    useAddPaymentMutation
 } = orderApi;
 
 export default orderApi;
