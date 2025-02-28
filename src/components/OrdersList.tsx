@@ -194,7 +194,7 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
                   pagination={false}
                   rowKey={(rec, idx) => rec.id ? String(rec.id) : `pending-${idx}`}
                 />
-                <div className='flex flex-col sm:flex-row items-center sm:justify-end mt-3 space-y-2 sm:space-y-0 sm:space-x-2'>
+                <div className='flex flex-row flex-wrap sm:justify-end items-center mt-3 gap-3'>
                   {(!order.nextBillingDate || order?.payments?.length === 0) && (
                     <Button variant='outlined' color='primary' size='large' type='primary' loading={isAddPaymentLoading} onClick={() => handleAddPayment(order.paymentId)}>
                       Добавить метод оплаты
