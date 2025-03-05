@@ -2,7 +2,8 @@ import { Link } from "./Link";
 import { Payment } from "./Payment";
 
 export interface Order {
-    id: number;               
+    id: number;      
+    courseName: string;         
     totalPrice: number;
     numberOfMonths: number;
     monthlyPrice: number;

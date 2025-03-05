@@ -75,7 +75,7 @@ const PersonalInfoForm: React.FC = () => {
     setMonthlyPayment(courseData.totalPrice / numberOfMonths);
 
     const uptNextDate = new Date().toISOString().split('T')[0];
-    const updatedDueDate = getNextBillingDate(uptNextDate, numberOfMonths);
+    const updatedDueDate = getNextBillingDate(uptNextDate, numberOfMonths-1);
 
     setDueDate(formatBillingDate(updatedDueDate));
     setNextDate(formatBillingDate(uptNextDate))
