@@ -150,7 +150,7 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
         >
           {orders.map((order) => {
             const allPayments = buildPaymentsArray(order);
-            const panelHeader = `Заказ #${order.id} — ${order.link.course.courseName}`;
+            const panelHeader = `Заказ #${order.id} — ${order.courseName}`;
             const panelBgColor = orderStatusMapping[order.status]?.bgColor || 'white';
 
             return (
@@ -201,7 +201,7 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
                     </Button>
                   )}
                   {(order.status !== "cancelled" && order.status !== "completed") && (
-                    <Button variant='outlined' color='danger' size='large' type='primary' onClick={() => showCancelModal(order.id, order.link.course.courseName)}>
+                    <Button variant='outlined' color='danger' size='large' type='primary' onClick={() => showCancelModal(order.id, order.courseName)}>
                       Отменить подписку
                     </Button>
                   )}
