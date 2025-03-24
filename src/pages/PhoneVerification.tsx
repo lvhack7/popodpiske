@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Form, Button, Typography } from 'antd';
 import { showNotification } from '../hooks/showNotification';
 import { useNavigate } from 'react-router-dom';
-import SmsCodeInput from '../components/SMSCodeInput';
+import SmsCodeInput from '../components/MailCodeInput';
 import { useAppSelector } from '../hooks/redux';
 import useValidatePaymentLink from '../hooks/validateLink';
-import { useSendSMSMutation, useVerifySMSMutation } from '../api/smsApi';
+import { useSendCodeMutation, useVerifyCodeMutation } from '../api/smsApi';
 
 const { Title } = Typography;
 
@@ -15,8 +15,8 @@ const PhoneVerificationForm: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  const [sendSMS] = useSendSMSMutation();
-  const [verifySMS] = useVerifySMSMutation();
+  const [sendSMS] = useSendCodeMutation();
+  const [verifySMS] = useVerifyCodeMutation();
 
   const linkId = useAppSelector((state) => state.courseReducer.paymentLink);
 

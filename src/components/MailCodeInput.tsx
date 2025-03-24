@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 
-interface SmsCodeInputProps {
+interface MailCodeInputProps {
   length?: number;
   onComplete: (code: string) => void;
   clearError?: boolean; // Trigger to clear inputs
 }
 
-const SmsCodeInput: React.FC<SmsCodeInputProps> = ({
+const MailCodeInput: React.FC<MailCodeInputProps> = ({
   length = 5,
   onComplete,
   clearError,
@@ -80,4 +80,4 @@ const SmsCodeInput: React.FC<SmsCodeInputProps> = ({
   );
 };
 
-export default SmsCodeInput;
+export default MailCodeInput;

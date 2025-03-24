@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Form, Input, Button, Typography, Modal } from 'antd';
 import { useCheckPhoneMutation, useLoginMutation } from '../api/authApi';
-import { useSendSMSMutation, useVerifySMSMutation } from '../api/smsApi';
+import { useSendCodeMutation, useVerifyCodeMutation } from '../api/smsApi';
 import { updateUserField, userCreated, userLoggedIn } from '../redux/slices/userSlice';
 import InputMask from 'react-input-mask';
 import { showNotification } from '../hooks/showNotification';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { setCourse } from '../redux/slices/courseSlice';
 import useValidatePaymentLink from '../hooks/validateLink';
-import SmsCodeInput from '../components/SMSCodeInput';
+import SmsCodeInput from '../components/MailCodeInput';
 
 const { Title } = Typography;
 
@@ -23,8 +23,8 @@ const Subscribe: React.FC = () => {
   const [smsModalVisible, setSmsModalVisible] = useState(false);
 
   // SMS mutations from RTK Query
-  const [sendSMS] = useSendSMSMutation();
-  const [verifySMS] = useVerifySMSMutation();
+  const [sendSMS] = useSendCodeMutation();
+  const [verifySMS] = useVerifyCodeMutation();
 
   // State for SMS resend logic in the modal.
   // "codeSent" indicates whether the countdown is running.
@@ -124,7 +124,7 @@ const Subscribe: React.FC = () => {
       let phoneFormatted = phone.replace(/[^0-9+]/g, '');
       if (phoneFormatted.length > 12) phoneFormatted = phoneFormatted.slice(0, 12);
 
-      const response = await login({ login: phoneFormatted, password: values.password }).unwrap();
+      const response = await login({ phone: phoneFormatted, password: values.password }).unwrap();
       localStorage.setItem("access_token", response.accessToken);
       dispatch(userCreated(response.user));
       dispatch(userLoggedIn(true));

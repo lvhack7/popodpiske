@@ -2,14 +2,14 @@ import { baseApi } from "."
 
 export const smsApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        sendSMS: builder.mutation<{message: string}, {phone: string}>({
+        sendCode: builder.mutation<{message: string}, {phone: string}>({
             query: (body) => ({
                 url: '/sms/send',
                 method: 'POST',
                 body
             }),
         }),
-        verifySMS: builder.mutation<{ phone: string, token: string }, { code: string, phone: string }>({
+        verifyCode: builder.mutation<{ phone: string, token: string }, { code: string, phone: string }>({
             query: (body) => ({
                 url: '/sms/verify',
                 method: 'POST',
@@ -19,4 +19,4 @@ export const smsApi = baseApi.injectEndpoints({
     })
 })
 
-export const { useSendSMSMutation, useVerifySMSMutation } = smsApi
+export const { useSendCodeMutation, useVerifyCodeMutation } = smsApi
