@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { Order } from '../models/Order';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { Payment } from '../models/Payment';
-import { formatNumber, getNextBillingDate } from '../utils';
+import { formatNumber } from '../utils';
 import { useAddPaymentMutation, useCancelOrderMutation } from '../api/orderApi';
 import { showNotification } from '../hooks/showNotification';
 
@@ -14,7 +14,7 @@ const { Title } = Typography;
 
 const statusMapping: { [key: string]: { text: string; color: string } } = {
   success: { text: 'Успешно', color: 'green' },
-  failure: { text: 'Отказ', color: 'red' },
+  failed: { text: 'Неуспешно', color: 'red' },
   pending: { text: 'В ожидании', color: 'orange' },
   cancel: { text: 'Не будет списано', color: 'gray' }
 };
@@ -75,35 +75,11 @@ const OrdersList: React.FC<OrdersListProps> = ({ orders }) => {
   };
 
   const buildPaymentsArray = (order: Order): Payment[] => {
-    const { payments, numberOfMonths, monthlyPrice, status } = order;
-
-    if (order.nextBillingDate === null && status === "pending") return [];
-
-    const sorted = [...payments].sort(
-      (a, b) => new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime()
+    // 1. Clone & sort your payments by paymentDate ascending
+    return [...order.payments].sort(
+      (a, b) =>
+        new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime()
     );
-
-    const monthlyAmt = monthlyPrice;
-    let nextBillingDate = order.nextBillingDate;
-
-    const result: Payment[] = [];
-    for (let i = 0; i < numberOfMonths; i++) {
-      const real = sorted[i];
-      if (real) {
-        result.push(real);
-      } else {
-        result.push({
-          id: 0,
-          amount: monthlyAmt,
-          currency: 'KZT',
-          status: order.status === "cancelled" ? 'cancel' : 'pending',
-          paymentDate: nextBillingDate,
-        });
-        nextBillingDate = getNextBillingDate(nextBillingDate);
-      }
-    }
-
-    return result;
   };
 
   const paymentColumns: ColumnsType<Payment> = [
